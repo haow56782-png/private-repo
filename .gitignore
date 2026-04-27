@@ -1,0 +1,52 @@
+# ============================================
+# ClawPM Workspace — .gitignore
+# ============================================
+
+# ── 密钥 & 配置（含 API key/token） ──
+openclaw.json
+.config
+.config.*
+
+# ── 编辑器/工具缓存 ──
+.agents/
+.claude/
+.trae/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── OpenClaw 内部状态 ──
+.openclaw/
+
+# ── Skills 锁文件（环境相关） ──
+skills-lock.json
+
+# ── 第三方项目（大文件/独立 repo） ──
+DeepSeek-OCR/
+
+# ── 生成文件/临时文件 ──
+*.jpg
+*.png
+*.pdf
+*.log
+*.tmp
+
+# ── macOS 系统文件 ──
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# ── 系统状态 ──
+state/
+
+# 实验/临时文件
+ocr_pipeline.py
+runtime-blueprint.json
+runtime-blueprint.schema.json
+TC-*.md
+
+# 内部缓存
+memory/.dreams/
