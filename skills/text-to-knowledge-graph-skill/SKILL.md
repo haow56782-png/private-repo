@@ -92,9 +92,65 @@ Identify the source type and central theme:
 
 ## Output Format
 
-Always output:
-1. **Human-readable explanation** — readable summary of the graph
+Always output **two formats**:
+1. **Markdown (.md)** — readable, embeddable in Notion/GitHub/docs
 2. **Graph JSON** — machine-readable, visualization-ready
+
+### Markdown Output
+
+Generate a markdown report with this structure:
+
+```markdown
+# [图谱名称]
+
+> [Summary]
+
+## 图谱结构
+
+```mermaid
+graph TD
+    A[根节点] -->|关系| B[子节点]
+```
+
+## 节点清单
+
+| ID | 标签 | 类型 | 层级 | 说明 |
+|---|---|---|---|---|
+| id_1 | 名称 | Concept | 0 | 描述 |
+
+(用表格列出全部节点，按层级排序)
+
+## 关系清单
+
+| 源节点 | 关系 | 目标节点 | 说明 |
+|---|---|---|---|
+| A | CONTAINS | B | 描述 |
+
+## 层级结构
+
+### Level 0 (根)
+- 节点列表
+
+### Level 1 (领域)
+- 节点列表
+
+### Level 2 (模块)
+- 节点列表
+
+## 洞察
+
+- 🔍 **[类型]**: 内容
+
+---
+*生成时间: {date}*
+```
+
+When outputting markdown:
+- Generate a Mermaid flowchart showing the top 2-3 levels
+- List all nodes in a table sorted by level
+- List all edges with source → relation → target
+- Organize hierarchy with indented bullet lists
+- Append insights section
 
 ### Graph JSON Schema
 

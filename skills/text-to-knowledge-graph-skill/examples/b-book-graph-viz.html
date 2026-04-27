@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-Book 风控系统知识图谱</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #0d1117; color: #e6edf3; overflow: hidden; }
+#container { width: 100vw; height: 100vh; position: relative; }
+svg { width: 100%; height: 100%; display: block; }
+
+/* Title */
+#title {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  color: #e6edf3; font-size: 20px; font-weight: 700; letter-spacing: 1px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8); pointer-events: none; z-index: 10;
+  background: rgba(13,17,23,0.7); padding: 6px 20px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+#subtitle {
+  position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
+  color: #8b949e; font-size: 12px; pointer-events: none; z-index: 10;
+}
+
+/* Tooltip */
+#tooltip {
+  position: absolute; display: none; z-index: 100;
+  background: rgba(22,27,34,0.95); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px; padding: 10px 14px; max-width: 320px;
+  font-size: 13px; line-height: 1.5; pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+}
+#tooltip .tip-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+#tooltip .tip-type { font-size: 11px; opacity: 0.7; margin-bottom: 6px; }
+#tooltip .tip-summary { font-size: 13px; opacity: 0.9; }
+
+/* Legend */
+#legend {
+  position: absolute; bottom: 24px; left: 24px; z-index: 10;
+  background: rgba(22,27,34,0.9); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 14px 18px; backdrop-filter: blur(8px);
+  min-width: 140px;
+}
+#legend h3 { font-size: 12px; font-weight: 600; margin-bottom: 8px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+.legend-item { display: flex; align-items: center; margin: 4px 0; font-size: 12px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+
+/* Controls */
+#controls {
+  position: absolute; bottom: 24px; right: 24px; z-index: 10;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ctrl-btn {
+  background: rgba(22,27,34,0.9); border: 1px solid rgba(255,255,255,0.12);
+  color: #e6edf3; border-radius: 8px; padding: 8px 14px;
+  font-size: 12px; cursor: pointer; backdrop-filter: blur(8px);
+  transition: all 0.2s; white-space: nowrap;
+}
+.ctrl-btn:hover { background: rgba(48,54,61,0.9); border-color: rgba(255,255,255,0.25); }
+.ctrl-btn.active { border-color: #58a6ff; color: #58a6ff; }
+#node-count {
+  position: absolute; top: 80px; right: 24px; z-index: 10;
+  background: rgba(22,27,34,0.85); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #8b949e;
+  backdrop-filter: blur(8px);
+}
+
+/* Edge label toggle */
+#edge-label-toggle {
+  position: absolute; top: 80px; left: 24px; z-index: 10;
+}
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="title">📊 B-Book 风控系统知识图谱</div>
+  <div id="subtitle">46 节点 · 63 关系 · 拖拽/滚轮浏览 · 点击高亮</div>
+  <div id="node-count">46 节点 · 63 条边</div>
+  <div id="tooltip"></div>
+  <div id="legend"><h3>节点类型</h3></div>
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-reset">🔄 重置视图</button>
+    <button class="ctrl-btn active" id="btn-edge-labels">🏷️ 边标签</button>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const graphData = {
+  "nodes": [
+    {"id":"b_book_risk_system","label":"B-Book 风控系统","type":"Concept","level":0,"summary":"B-Book做市模式下经纪商风控体系的完整知识图谱"},
+    {"id":"b_book_business_model","label":"B-Book 核心业务模式","type":"Concept","level":1,"summary":"经纪商内部撮合，不抛单至外部流动性提供商"},
+    {"id":"risk_exposure_sources","label":"风险暴露来源","type":"Risk","level":1,"summary":"经纪商面临的主要风险类型"},
+    {"id":"risk_control_architecture","label":"风控体系架构","type":"Module","level":1,"summary":"风控核心模块与流程的完整架构"},
+    {"id":"internal_matching","label":"内部撮合","type":"Concept","level":2,"summary":"经纪商内部完成买卖订单匹配，不抛单至外部"},
+    {"id":"market_making_revenue","label":"做市收益(客户亏损)","type":"Metric","level":2,"summary":"客户亏损即为经纪商做市收益"},
+    {"id":"fee_spread_revenue","label":"手续费/点差","type":"Metric","level":2,"summary":"每笔交易收取的手续费或买卖点差"},
+    {"id":"swap_interest_revenue","label":"隔夜利息","type":"Metric","level":2,"summary":"客户持仓过夜产生的利息收入"},
+    {"id":"client_profit_risk","label":"客户盈利风险","type":"Risk","level":2,"summary":"盈利客户过多时经纪商亏损"},
+    {"id":"directional_exposure_risk","label":"方向性敞口风险","type":"Risk","level":2,"summary":"客户整体看多时经纪商被动做空"},
+    {"id":"large_client_risk","label":"大额客户风险","type":"Risk","level":2,"summary":"单一客户持仓过大带来的风险"},
+    {"id":"hedge_failure_risk","label":"对冲失效风险","type":"Risk","level":2,"summary":"内部对冲无法完全抵消敞口"},
+    {"id":"liquidation_risk","label":"爆仓穿仓风险","type":"Risk","level":2,"summary":"客户爆仓后还欠经纪商钱"},
+    {"id":"liquidity_risk","label":"流动性风险","type":"Risk","level":2,"summary":"市场剧烈波动时无法及时对冲"},
+    {"id":"client_tier_management","label":"客户分层管理","type":"Module","level":2,"summary":"按客户类型分层，匹配不同风控策略"},
+    {"id":"net_exposure_management","label":"净敞口管理","type":"Module","level":2,"summary":"实时监控与控制经纪商净敞口"},
+    {"id":"risk_rule_engine","label":"风控规则引擎","type":"Module","level":2,"summary":"自动化风控规则检测与执行"},
+    {"id":"hedge_execution_flow","label":"对冲执行流程","type":"Process","level":2,"summary":"净敞口超限后的对冲操作流程"},
+    {"id":"risk_dashboard","label":"风控看板","type":"Output","level":2,"summary":"风控数据可视化与监控界面"},
+    {"id":"exception_handling","label":"异常处理","type":"Process","level":2,"summary":"各类异常场景的应急处理流程"},
+    {"id":"vip_client_role","label":"VIP客户","type":"Role","level":3,"summary":"高杠杆、大额交易、单独监控"},
+    {"id":"regular_client_role","label":"普通客户","type":"Role","level":3,"summary":"标准杠杆、常规交易"},
+    {"id":"hft_client_role","label":"高频/剥头皮客户","type":"Role","level":3,"summary":"限制交易频次、缩小杠杆"},
+    {"id":"profitable_client_role","label":"盈利客户","type":"Role","level":3,"summary":"重点关注、限制开仓或转A-Book"},
+    {"id":"net_position_calc","label":"净头寸实时计算","type":"Metric","level":3,"summary":"实时计算各品种净头寸"},
+    {"id":"exposure_limit_rule","label":"敞口上限设定","type":"Rule","level":3,"summary":"设定单品种/总账户敞口上限"},
+    {"id":"threshold_auto_hedge","label":"阈值触发自动对冲","type":"Process","level":3,"summary":"触发敞口阈值后自动执行对冲"},
+    {"id":"hedge_channel","label":"对冲通道","type":"Process","level":3,"summary":"内部对冲→交易所对冲→流动性提供商 三级对冲"},
+    {"id":"large_trade_review_rule","label":"大额交易审核","type":"Rule","level":3,"summary":"单笔交易>$50,000自动人工审核"},
+    {"id":"consecutive_profit_rule","label":"连续盈利检测","type":"Rule","level":3,"summary":"同一客户连续盈利>5笔，标记观察"},
+    {"id":"abnormal_trade_rule","label":"异常交易检测","type":"Rule","level":3,"summary":"检测高频下单/剥头皮/对敲等异常行为"},
+    {"id":"dynamic_leverage_rule","label":"杠杆动态调整","type":"Rule","level":3,"summary":"亏损>30%自动降杠杆"},
+    {"id":"overnight_position_rule","label":"隔夜持仓限制","type":"Rule","level":3,"summary":"弱势货币对隔夜仓位减半"},
+    {"id":"hedge_threshold_metric","label":"对冲监控阈值","type":"Metric","level":3,"summary":"品种净敞口>$100,000触发对冲"},
+    {"id":"hedge_ratio_metric","label":"对冲比例","type":"Metric","level":3,"summary":"超额部分的60%-80%进行对冲"},
+    {"id":"hedge_tool","label":"对冲工具","type":"Tool","level":3,"summary":"BTC/USDT永续合约作为对冲工具"},
+    {"id":"hedge_frequency","label":"对冲频率","type":"Process","level":3,"summary":"实时/每小时/日终三种频率可选"},
+    {"id":"hedge_cost_metric","label":"对冲成本","type":"Metric","level":3,"summary":"对冲操作产生的成本计入经纪商损益"},
+    {"id":"realtime_pnl_metric","label":"实时P&L","type":"Metric","level":3,"summary":"客户总盈亏vs经纪商对冲盈亏对比"},
+    {"id":"net_exposure_dash","label":"净敞口仪表盘","type":"Output","level":3,"summary":"品种级/账户级/整体净敞口可视化"},
+    {"id":"client_pnl_ranking","label":"客户盈亏排行榜","type":"Output","level":3,"summary":"TOP 10盈利/亏损客户排名"},
+    {"id":"risk_event_log","label":"风控事件日志","type":"Data","level":3,"summary":"所有规则触发记录和风控事件日志"},
+    {"id":"leverage_usage_stats","label":"杠杆使用率统计","type":"Metric","level":3,"summary":"客户杠杆使用情况统计"},
+    {"id":"liquidation_procedure","label":"穿仓处理流程","type":"Process","level":3,"summary":"自动转入坏账账户，启动追偿流程"},
+    {"id":"hedge_failure_procedure","label":"对冲失败处理","type":"Process","level":3,"summary":"降级为手动对冲，通知风控团队"},
+    {"id":"system_exception_procedure","label":"系统异常处理","type":"Process","level":3,"summary":"暂停开仓，保留平仓功能"},
+    {"id":"market_abnormal_procedure","label":"行情异常处理","type":"Process","level":3,"summary":"暂停交易，启动价格保护机制"},
+    {"id":"risk_control_team","label":"风控团队","type":"Role","level":3,"summary":"负责风控规则制定和对冲执行的运营团队"},
+    {"id":"net_exposure_concept","label":"净敞口","type":"Concept","level":2,"summary":"经纪商总风险暴露 = 客户总盈利 - 对冲盈亏"}
+  ],
+  "edges": [
+    {"id":"e0","source":"b_book_risk_system","target":"b_book_business_model","relation":"CONTAINS","summary":"风控系统包含业务模式定义"},
+    {"id":"e1","source":"b_book_risk_system","target":"risk_exposure_sources","relation":"CONTAINS","summary":"风控系统包含风险来源清单"},
+    {"id":"e2","source":"b_book_risk_system","target":"risk_control_architecture","relation":"CONTAINS","summary":"风控系统包含风控体系架构"},
+    {"id":"e3","source":"b_book_business_model","target":"internal_matching","relation":"CONTAINS","summary":"B-Book本质是内部撮合"},
+    {"id":"e4","source":"b_book_business_model","target":"market_making_revenue","relation":"GENERATES","summary":"做市收益来自客户亏损"},
+    {"id":"e5","source":"b_book_business_model","target":"fee_spread_revenue","relation":"GENERATES","summary":"手续费/点差是收入来源"},
+    {"id":"e6","source":"b_book_business_model","target":"swap_interest_revenue","relation":"GENERATES","summary":"隔夜利息是收入来源"},
+    {"id":"e7","source":"b_book_business_model","target":"net_exposure_concept","relation":"AFFECTS","summary":"业务模式决定净敞口性质"},
+    {"id":"e8","source":"risk_exposure_sources","target":"client_profit_risk","relation":"CONTAINS","summary":"客户盈利是核心风险"},
+    {"id":"e9","source":"risk_exposure_sources","target":"directional_exposure_risk","relation":"CONTAINS","summary":"方向性敞口是风险来源"},
+    {"id":"e10","source":"risk_exposure_sources","target":"large_client_risk","relation":"CONTAINS","summary":"大额客户是风险来源"},
+    {"id":"e11","source":"risk_exposure_sources","target":"hedge_failure_risk","relation":"CONTAINS","summary":"对冲失效是风险来源"},
+    {"id":"e12","source":"risk_exposure_sources","target":"liquidation_risk","relation":"CONTAINS","summary":"爆仓穿仓是风险来源"},
+    {"id":"e13","source":"risk_exposure_sources","target":"liquidity_risk","relation":"CONTAINS","summary":"流动性是风险来源"},
+    {"id":"e14","source":"risk_control_architecture","target":"client_tier_management","relation":"HAS_MODULE","summary":"风控体系包含客户分层管理"},
+    {"id":"e15","source":"risk_control_architecture","target":"net_exposure_management","relation":"HAS_MODULE","summary":"风控体系包含净敞口管理"},
+    {"id":"e16","source":"risk_control_architecture","target":"risk_rule_engine","relation":"HAS_MODULE","summary":"风控体系包含规则引擎"},
+    {"id":"e17","source":"risk_control_architecture","target":"hedge_execution_flow","relation":"HAS_MODULE","summary":"风控体系包含对冲执行流程"},
+    {"id":"e18","source":"risk_control_architecture","target":"risk_dashboard","relation":"HAS_MODULE","summary":"风控体系包含风控看板"},
+    {"id":"e19","source":"risk_control_architecture","target":"exception_handling","relation":"HAS_MODULE","summary":"风控体系包含异常处理"},
+    {"id":"e20","source":"client_tier_management","target":"vip_client_role","relation":"CONTAINS","summary":"VIP客户分层"},
+    {"id":"e21","source":"client_tier_management","target":"regular_client_role","relation":"CONTAINS","summary":"普通客户分层"},
+    {"id":"e22","source":"client_tier_management","target":"hft_client_role","relation":"CONTAINS","summary":"高频客户分层"},
+    {"id":"e23","source":"client_tier_management","target":"profitable_client_role","relation":"CONTAINS","summary":"盈利客户分层"},
+    {"id":"e24","source":"net_exposure_management","target":"net_position_calc","relation":"CONTAINS","summary":"实时计算净头寸"},
+    {"id":"e25","source":"net_exposure_management","target":"exposure_limit_rule","relation":"CONTAINS","summary":"设定敞口上限"},
+    {"id":"e26","source":"net_exposure_management","target":"threshold_auto_hedge","relation":"CONTAINS","summary":"触发后自动对冲"},
+    {"id":"e27","source":"net_exposure_management","target":"hedge_channel","relation":"CONTAINS","summary":"多级对冲通道"},
+    {"id":"e28","source":"risk_rule_engine","target":"large_trade_review_rule","relation":"CONTAINS","summary":"大额交易审核规则"},
+    {"id":"e29","source":"risk_rule_engine","target":"consecutive_profit_rule","relation":"CONTAINS","summary":"连续盈利检查规则"},
+    {"id":"e30","source":"risk_rule_engine","target":"abnormal_trade_rule","relation":"CONTAINS","summary":"异常交易检测规则"},
+    {"id":"e31","source":"risk_rule_engine","target":"dynamic_leverage_rule","relation":"CONTAINS","summary":"杠杆动态调整规则"},
+    {"id":"e32","source":"risk_rule_engine","target":"overnight_position_rule","relation":"CONTAINS","summary":"隔夜持仓限制规则"},
+    {"id":"e33","source":"hedge_execution_flow","target":"hedge_threshold_metric","relation":"HAS_STEP","summary":"第一步:监控阈值判断"},
+    {"id":"e34","source":"hedge_execution_flow","target":"hedge_ratio_metric","relation":"HAS_STEP","summary":"第二步:确定对冲比例"},
+    {"id":"e35","source":"hedge_execution_flow","target":"hedge_tool","relation":"HAS_STEP","summary":"第三步:选择对冲工具"},
+    {"id":"e36","source":"hedge_execution_flow","target":"hedge_frequency","relation":"HAS_STEP","summary":"第四步:设定对冲频率"},
+    {"id":"e37","source":"hedge_execution_flow","target":"hedge_cost_metric","relation":"HAS_STEP","summary":"第五步:核算对冲成本"},
+    {"id":"e38","source":"risk_dashboard","target":"realtime_pnl_metric","relation":"CONTAINS","summary":"实时P&L展示"},
+    {"id":"e39","source":"risk_dashboard","target":"net_exposure_dash","relation":"CONTAINS","summary":"净敞口仪表盘"},
+    {"id":"e40","source":"risk_dashboard","target":"client_pnl_ranking","relation":"CONTAINS","summary":"客户盈亏排行榜"},
+    {"id":"e41","source":"risk_dashboard","target":"risk_event_log","relation":"CONTAINS","summary":"风控事件日志"},
+    {"id":"e42","source":"risk_dashboard","target":"leverage_usage_stats","relation":"CONTAINS","summary":"杠杆使用率统计"},
+    {"id":"e43","source":"exception_handling","target":"liquidation_procedure","relation":"CONTAINS","summary":"穿仓处理"},
+    {"id":"e44","source":"exception_handling","target":"hedge_failure_procedure","relation":"CONTAINS","summary":"对冲失败处理"},
+    {"id":"e45","source":"exception_handling","target":"system_exception_procedure","relation":"CONTAINS","summary":"系统异常处理"},
+    {"id":"e46","source":"exception_handling","target":"market_abnormal_procedure","relation":"CONTAINS","summary":"行情异常处理"},
+    {"id":"e47","source":"risk_rule_engine","target":"risk_event_log","relation":"WRITES","summary":"规则触发写入风控事件日志"},
+    {"id":"e48","source":"risk_rule_engine","target":"threshold_auto_hedge","relation":"TRIGGERS","summary":"规则引擎触发对冲流程"},
+    {"id":"e49","source":"net_position_calc","target":"net_exposure_concept","relation":"MONITORS","summary":"净头寸计算监控净敞口"},
+    {"id":"e50","source":"exposure_limit_rule","target":"net_exposure_concept","relation":"CONTROLS","summary":"敞口上限控制净敞口"},
+    {"id":"e51","source":"client_tier_management","target":"client_profit_risk","relation":"CONTROLS","summary":"盈利客户分层管理控制盈利风险"},
+    {"id":"e52","source":"client_tier_management","target":"large_client_risk","relation":"CONTROLS","summary":"VIP客户单独监控控制大额客户风险"},
+    {"id":"e53","source":"net_exposure_management","target":"directional_exposure_risk","relation":"CONTROLS","summary":"净敞口管理控制方向性敞口"},
+    {"id":"e54","source":"hedge_execution_flow","target":"hedge_failure_risk","relation":"OPTIMIZES","summary":"对冲执行降低对冲失效风险"},
+    {"id":"e55","source":"hedge_execution_flow","target":"liquidity_risk","relation":"OPTIMIZES","summary":"多级对冲通道缓解流动性风险"},
+    {"id":"e56","source":"exception_handling","target":"liquidation_risk","relation":"HANDLES","summary":"异常处理流程对应爆仓穿仓风险"},
+    {"id":"e57","source":"exception_handling","target":"risk_control_team","relation":"DEPENDS_ON","summary":"异常降级处理依赖风控团队人工介入"},
+    {"id":"e58","source":"hedge_execution_flow","target":"hedge_failure_procedure","relation":"TRIGGERS","summary":"对冲执行失败触发对冲失败处理流程"},
+    {"id":"e59","source":"large_trade_review_rule","target":"risk_control_team","relation":"TRIGGERS","summary":"大额交易审核触发人工审批"},
+    {"id":"e60","source":"net_exposure_management","target":"net_exposure_concept","relation":"MONITORS","summary":"净敞口管理全面监控净敞口"},
+    {"id":"e61","source":"hedge_channel","target":"hedge_failure_procedure","relation":"TRIGGERS","summary":"三级对冲通道全部失败触发对冲失败处理"},
+    {"id":"e62","source":"risk_rule_engine","target":"dynamic_leverage_rule","relation":"CONTROLS","summary":"规则引擎执行杠杆动态调整"}
+  ]
+};
+
+// ===== CONFIG =====
+const TYPE_COLORS = {
+  "Concept":  "#e74c3c",
+  "Module":   "#3498db",
+  "Process":  "#2ecc71",
+  "Role":     "#e67e22",
+  "Rule":     "#9b59b6",
+  "Metric":   "#1abc9c",
+  "Risk":     "#c0392b",
+  "Tool":     "#95a5a6",
+  "Data":     "#f1c40f",
+  "Decision": "#e91e9b",
+  "Output":   "#8B4513"
+};
+
+const LEVEL_RADII = { 0: 40, 1: 30, 2: 24, 3: 18, 4: 14 };
+const TYPE_ORDER = ["Concept","Module","Process","Role","Rule","Metric","Risk","Tool","Data","Decision","Output"];
+
+// ===== SETUP SVG =====
+const container = document.getElementById('container');
+const w = container.clientWidth;
+const h = container.clientHeight;
+
+const svg = d3.select("#container")
+  .append("svg")
+  .attr("viewBox", [0, 0, w, h]);
+
+const g = svg.append("g");  // zoom container
+
+// ===== ZOOM =====
+const zoom = d3.zoom()
+  .scaleExtent([0.15, 6])
+  .on("zoom", (event) => {
+    g.attr("transform", event.transform);
+  });
+svg.call(zoom);
+
+// ===== TOOLTIP =====
+const tooltip = d3.select("#tooltip");
+
+function showTooltip(event, d) {
+  const color = TYPE_COLORS[d.type] || "#fff";
+  tooltip
+    .style("display", "block")
+    .html(`
+      <div class="tip-title" style="color:${color}">${d.label}</div>
+      <div class="tip-type">${d.type} · Level ${d.level}</div>
+      <div class="tip-summary">${d.summary || ''}</div>
+    `);
+  moveTooltip(event);
+}
+
+function moveTooltip(event) {
+  const t = d3.select("#tooltip");
+  let left = event.offsetX + 16;
+  let top = event.offsetY - 10;
+  const tw = t.node().offsetWidth || 280;
+  const th = t.node().offsetHeight || 100;
+  if (left + tw + 20 > w) left = event.offsetX - tw - 16;
+  if (top + th + 20 > h) top = h - th - 20;
+  if (top < 10) top = 10;
+  t.style("left", left + "px").style("top", top + "px");
+}
+
+function hideTooltip() {
+  tooltip.style("display", "none");
+}
+
+// ===== BUILD DATA =====
+const nodes = graphData.nodes.map(d => ({ ...d }));
+const nodeMap = {};
+nodes.forEach(n => nodeMap[n.id] = n);
+
+const edges = graphData.edges.map(d => {
+  return {
+    ...d,
+    source: nodeMap[d.source],
+    target: nodeMap[d.target]
+  };
+});
+
+// ===== GRADIENTS =====
+const defs = svg.append("defs");
+TYPE_ORDER.forEach(type => {
+  const color = TYPE_COLORS[type];
+  defs.append("radialGradient")
+    .attr("id", "grad-" + type.replace(/\s/g,''))
+    .attr("cx","30%").attr("cy","30%").attr("r","70%")
+    .append("stop").attr("offset","0%").attr("stop-color", d3.color(color).brighter(0.3));
+  d3.select("#grad-" + type.replace(/\s/g,''))
+    .append("stop").attr("offset","100%").attr("stop-color", color);
+});
+
+// ===== DRAW =====
+
+var edgeLabelVisible = true;
+
+// Edges (links)
+const linkGroup = g.append("g").attr("class", "links");
+const link = linkGroup.selectAll("line")
+  .data(edges)
+  .join("line")
+  .attr("stroke", "rgba(255,255,255,0.12)")
+  .attr("stroke-width", 1.2)
+  .attr("stroke-opacity", 0.6);
+
+// Edge labels
+const edgeLabelGroup = g.append("g").attr("class", "edge-labels");
+const edgeLabel = edgeLabelGroup.selectAll("text")
+  .data(edges)
+  .join("text")
+  .text(d => d.relation)
+  .attr("font-size", 9)
+  .attr("fill", "rgba(255,255,255,0.35)")
+  .attr("text-anchor", "middle")
+  .attr("dy", "-6")
+  .attr("pointer-events", "none");
+
+// Edge paths for hover detection
+const edgeHit = g.append("g").attr("class", "edge-hits")
+  .selectAll("line")
+  .data(edges)
+  .join("line")
+  .attr("stroke", "transparent")
+  .attr("stroke-width", 12)
+  .attr("pointer-events", "stroke")
+  .on("mouseover", function(event, d) {
+    d3.select(this).attr("stroke", "rgba(255,255,255,0.05)");
+    showTooltip(event, { label: d.relation, type: "关系", level: "", summary: d.summary || "" });
+  })
+  .on("mousemove", moveTooltip)
+  .on("mouseout", function() {
+    d3.select(this).attr("stroke", "transparent");
+    hideTooltip();
+  });
+
+// Nodes
+const nodeGroup = g.append("g").attr("class", "nodes");
+const node = nodeGroup.selectAll("g")
+  .data(nodes)
+  .join("g")
+  .attr("cursor", "grab")
+  .call(d3.drag()
+    .on("start", dragStarted)
+    .on("drag", dragged)
+    .on("end", dragEnded)
+  );
+
+// Node circles
+node.append("circle")
+  .attr("r", d => LEVEL_RADII[d.level] || 18)
+  .attr("fill", d => "url(#grad-" + d.type.replace(/\s/g,'') + ")")
+  .attr("stroke", d => TYPE_COLORS[d.type] || "#fff")
+  .attr("stroke-width", d => Math.max(1, d.level + 1))
+  .attr("stroke-opacity", 0.9)
+  .attr("filter", "drop-shadow(0 2px 6px rgba(0,0,0,0.4))")
+  .on("mouseover", function(event, d) {
+    d3.select(this).transition().duration(150).attr("filter", "drop-shadow(0 0 12px " + TYPE_COLORS[d.type] + "88)");
+    showTooltip(event, d);
+  })
+  .on("mousemove", moveTooltip)
+  .on("mouseout", function() {
+    d3.select(this).transition().duration(150).attr("filter", "drop-shadow(0 2px 6px rgba(0,0,0,0.4))");
+    hideTooltip();
+  })
+  .on("click", function(event, d) {
+    event.stopPropagation();
+    handleNodeClick(d);
+  });
+
+// Node labels
+node.append("text")
+  .text(d => {
+    const maxChars = d.level === 0 ? 10 : d.level <= 1 ? 10 : d.level <= 2 ? 8 : 6;
+    return d.label.length > maxChars ? d.label.slice(0, maxChars) + '…' : d.label;
+  })
+  .attr("text-anchor", "middle")
+  .attr("dy", d => LEVEL_RADII[d.level] + 14)
+  .attr("fill", "#e6edf3")
+  .attr("font-size", d => Math.max(9, 14 - d.level * 1.5))
+  .attr("font-weight", d => d.level <= 1 ? 700 : 500)
+  .attr("pointer-events", "none")
+  .attr("paint-order", "stroke")
+  .attr("stroke", "#0d1117")
+  .attr("stroke-width", 2.5)
+  .attr("stroke-linecap", "round")
+  .attr("stroke-linejoin", "round");
+
+// Inner label on node
+node.append("text")
+  .text(d => {
+    if (d.level <= 1) return '';
+    const icons = { Concept:'●', Module:'◆', Process:'▶', Role:'👤', Rule:'⚙', Metric:'📊', Risk:'⚠', Tool:'🔧', Data:'📦', Decision:'🎯', Output:'📋' };
+    return icons[d.type] || '○';
+  })
+  .attr("text-anchor", "middle")
+  .attr("dy", 4)
+  .attr("fill", "#fff")
+  .attr("font-size", d => Math.max(10, 16 - d.level * 2))
+  .attr("pointer-events", "none")
+  .attr("opacity", 0.8);
+
+// ===== SIMULATION =====
+const sim = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(edges).id(d => d.id).distance(d => {
+    const l = Math.min(d.source.level, d.target.level);
+    return 80 + l * 30;
+  }).strength(0.4))
+  .force("charge", d3.forceManyBody().strength(d => -600 - (3 - d.level) * 200))
+  .force("center", d3.forceCenter(w / 2, h / 2).strength(0.08))
+  .force("collide", d3.forceCollide(d => LEVEL_RADII[d.level] + 30))
+  .on("tick", ticked);
+
+// ===== FUNCTIONS =====
+
+function ticked() {
+  link
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x)
+    .attr("y2", d => d.target.y);
+  edgeLabel
+    .attr("x", d => (d.source.x + d.target.x) / 2)
+    .attr("y", d => (d.source.y + d.target.y) / 2);
+  edgeHit
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x)
+    .attr("y2", d => d.target.y);
+  node.attr("transform", d => `translate(${d.x},${d.y})`);
+}
+
+function dragStarted(event, d) {
+  if (!event.active) sim.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+  d3.select(this).attr("cursor", "grabbing");
+}
+
+function dragged(event, d) {
+  d.fx = event.x;
+  d.fy = event.y;
+}
+
+function dragEnded(event, d) {
+  if (!event.active) sim.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+  d3.select(this).attr("cursor", "grab");
+}
+
+function handleNodeClick(clickedNode) {
+  // Build adjacency set
+  const adjNodes = new Set();
+  const adjEdges = new Set();
+  adjNodes.add(clickedNode.id);
+  
+  edges.forEach(e => {
+    const sid = typeof e.source === 'object' ? e.source.id : e.source;
+    const tid = typeof e.target === 'object' ? e.target.id : e.target;
+    if (sid === clickedNode.id || tid === clickedNode.id) {
+      adjNodes.add(sid);
+      adjNodes.add(tid);
+      adjEdges.add(e.id);
+    }
+  });
+
+  // Highlight nodes
+  node.selectAll("circle")
+    .transition().duration(300)
+    .attr("opacity", d => adjNodes.has(d.id) ? 1 : 0.18);
+  node.selectAll("text")
+    .transition().duration(300)
+    .attr("opacity", d => adjNodes.has(d.id) ? 1 : 0.18);
+  
+  // Highlight edges
+  link.transition().duration(300)
+    .attr("stroke-opacity", d => adjEdges.has(d.id) ? 0.7 : 0.05)
+    .attr("stroke", d => adjEdges.has(d.id) ? (
+      d.source.id === clickedNode.id || d.target.id === clickedNode.id ? TYPE_COLORS[clickedNode.type] || "#fff" : "rgba(255,255,255,0.4)"
+    ) : "rgba(255,255,255,0.12)")
+    .attr("stroke-width", d => adjEdges.has(d.id) ? 2.5 : 0.8);
+  
+  edgeLabel.transition().duration(300)
+    .attr("opacity", d => adjEdges.has(d.id) ? 0.9 : 0.04);
+
+  // Mark selected node
+  node.selectAll("circle")
+    .filter(d => d.id === clickedNode.id)
+    .transition().duration(300)
+    .attr("filter", "drop-shadow(0 0 18px " + TYPE_COLORS[clickedNode.type] + ")")
+    .attr("stroke-width", Math.max(1, clickedNode.level + 3));
+}
+
+// Click on background to reset highlights
+svg.on("click", function() {
+  resetHighlight();
+});
+
+function resetHighlight() {
+  node.selectAll("circle")
+    .transition().duration(400)
+    .attr("opacity", 1)
+    .attr("filter", "drop-shadow(0 2px 6px rgba(0,0,0,0.4))")
+    .attr("stroke-width", d => Math.max(1, d.level + 1));
+  node.selectAll("text")
+    .transition().duration(400)
+    .attr("opacity", 1);
+  link.transition().duration(400)
+    .attr("stroke-opacity", 0.6)
+    .attr("stroke", "rgba(255,255,255,0.12)")
+    .attr("stroke-width", 1.2);
+  edgeLabel.transition().duration(400)
+    .attr("opacity", edgeLabelVisible ? 1 : 0);
+}
+
+// ===== LEGEND =====
+const legendDiv = d3.select("#legend");
+TYPE_ORDER.forEach(type => {
+  const color = TYPE_COLORS[type];
+  const row = legendDiv.append("div").attr("class", "legend-item");
+  row.append("div").attr("class", "legend-dot").style("background", color).style("box-shadow", "0 0 6px " + color + "44");
+  row.append("span").text(type);
+});
+
+// ===== CONTROLS =====
+
+// Reset view
+document.getElementById("btn-reset").addEventListener("click", () => {
+  svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+  resetHighlight();
+  sim.alpha(0.3).restart();
+});
+
+// Toggle edge labels
+document.getElementById("btn-edge-labels").addEventListener("click", function() {
+  edgeLabelVisible = !edgeLabelVisible;
+  this.classList.toggle("active");
+  edgeLabel.transition().duration(300).attr("opacity", edgeLabelVisible ? 1 : 0);
+});
+
+// ===== RESIZE =====
+window.addEventListener("resize", () => {
+  const nw = container.clientWidth;
+  const nh = container.clientHeight;
+  svg.attr("viewBox", [0, 0, nw, nh]);
+  sim.force("center", d3.forceCenter(nw / 2, nh / 2));
+  sim.alpha(0.1).restart();
+});
+
+// ===== INITIAL ZOOM FIT =====
+// Let the simulation stabilize first, then fit
+setTimeout(() => {
+  resetHighlight();
+  // Auto-fit after stabilization
+  const bounds = g.node().getBBox();
+  if (bounds.width > 0 && bounds.height > 0) {
+    const scale = Math.min(nw / (bounds.width + 200), nh / (bounds.height + 200), 1.2);
+    const tx = nw / 2 - (bounds.x + bounds.width / 2) * scale;
+    const ty = nh / 2 - (bounds.y + bounds.height / 2) * scale;
+    svg.transition().duration(800).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+  }
+}, 2000);
+
+// Keep stabilizing
+setTimeout(() => { sim.alpha(0.05).restart(); }, 500);
+setTimeout(() => { sim.alpha(0.02).restart(); }, 1500);
+setTimeout(() => { sim.alphaTarget(0); }, 3000);
+
+</script>
+</body>
+</html>
