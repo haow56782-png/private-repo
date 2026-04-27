@@ -1,0 +1,31 @@
+```json
+{
+  "graph_name": "AI Agent Product Knowledge Graph",
+  "graph_type": "product",
+  "source_type": "text",
+  "summary": "以任务执行为中心的 AI Agent 产品系统知识图谱",
+  "nodes": [
+    {"id": "ai_agent_product", "label": "AI Agent 产品", "type": "Concept", "level": 0, "summary": "以任务执行为中心的智能产品系统", "properties": {}},
+    {"id": "task_understanding", "label": "任务理解", "type": "Module", "level": 1, "summary": "识别用户意图并拆解任务", "properties": {}},
+    {"id": "tool_calling", "label": "工具调用", "type": "Module", "level": 1, "summary": "连接外部系统并执行动作", "properties": {}},
+    {"id": "execution_process", "label": "执行过程", "type": "Process", "level": 1, "summary": "展示任务执行状态和过程", "properties": {}},
+    {"id": "result_generation", "label": "结果生成", "type": "Output", "level": 1, "summary": "形成报告、建议或结论", "properties": {}},
+    {"id": "user_feedback", "label": "用户反馈", "type": "Data", "level": 1, "summary": "用于优化后续推荐", "properties": {}}
+  ],
+  "edges": [
+    {"id": "edge_root_task", "source": "ai_agent_product", "target": "task_understanding", "relation": "HAS_MODULE", "direction": "source_to_target", "summary": "AI Agent 产品包含任务理解模块", "properties": {}},
+    {"id": "edge_task_tool", "source": "task_understanding", "target": "tool_calling", "relation": "TRIGGERS", "direction": "source_to_target", "summary": "任务理解后触发工具调用", "properties": {}},
+    {"id": "edge_tool_exec", "source": "tool_calling", "target": "execution_process", "relation": "TRIGGERS", "direction": "source_to_target", "summary": "工具调用进入执行过程", "properties": {}},
+    {"id": "edge_exec_result", "source": "execution_process", "target": "result_generation", "relation": "GENERATES", "direction": "source_to_target", "summary": "执行过程最终生成结果", "properties": {}},
+    {"id": "edge_feedback_result", "source": "user_feedback", "target": "result_generation", "relation": "OPTIMIZES", "direction": "source_to_target", "summary": "用户反馈优化结果生成", "properties": {}}
+  ],
+  "hierarchy": [
+    {"level": 0, "nodes": ["ai_agent_product"]},
+    {"level": 1, "nodes": ["task_understanding", "tool_calling", "execution_process", "result_generation", "user_feedback"]}
+  ],
+  "insights": [
+    {"type": "structure", "content": "该图谱以 AI Agent 产品为中心，围绕任务理解、工具调用、执行过程、结果生成和反馈优化展开。"},
+    {"type": "recommendation", "content": "后续可补充：工具权限、异常处理、用户确认节点、执行日志、结果评估。"}
+  ]
+}
+```

@@ -1,0 +1,772 @@
+{
+  "graph_name": "风控系统知识图谱",
+  "graph_type": "risk",
+  "source_type": "text",
+  "summary": "风控系统知识图谱，包含5层风控分层体系（账户层、行为层、交易层、资金层、合规层）、规则引擎处理流水线（输入事件→规则匹配→风险评分→决策动作）以及5种异常处理策略（订单异常、支付超时、资金异常、系统错误、数据不一致）及其对应处置动作。",
+  "nodes": [
+    {
+      "id": "risk_control_system",
+      "label": "风控系统",
+      "type": "Concept",
+      "level": 0,
+      "summary": "风控系统的顶层抽象，涵盖分层风控、规则引擎和异常处理三大模块"
+    },
+    {
+      "id": "risk_control_layers",
+      "label": "风控分层",
+      "type": "Module",
+      "level": 1,
+      "summary": "五层风控体系，按风险维度分层治理"
+    },
+    {
+      "id": "rule_engine",
+      "label": "规则引擎",
+      "type": "Process",
+      "level": 1,
+      "summary": "事件驱动的规则处理流水线，从输入到决策的完整链路"
+    },
+    {
+      "id": "exception_handling",
+      "label": "异常处理策略",
+      "type": "Module",
+      "level": 1,
+      "summary": "各类异常场景的处置策略和兜底方案"
+    },
+    {
+      "id": "account_layer",
+      "label": "账户层",
+      "type": "Module",
+      "level": 2,
+      "summary": "账户安全风控层，检测登录异常、异地登录和设备指纹风险"
+    },
+    {
+      "id": "behavior_layer",
+      "label": "行为层",
+      "type": "Module",
+      "level": 2,
+      "summary": "用户行为风控层，检测异常操作频次和机器行为"
+    },
+    {
+      "id": "transaction_layer",
+      "label": "交易层",
+      "type": "Module",
+      "level": 2,
+      "summary": "交易风控层，检测大额交易、异常价格、对敲和刷量行为"
+    },
+    {
+      "id": "fund_layer",
+      "label": "资金层",
+      "type": "Module",
+      "level": 2,
+      "summary": "资金安全风控层，检测洗钱、混币和异常资金流向"
+    },
+    {
+      "id": "compliance_layer",
+      "label": "合规层",
+      "type": "Module",
+      "level": 2,
+      "summary": "合规风控层，执行KYC验证和制裁名单筛查"
+    },
+    {
+      "id": "input_event",
+      "label": "输入事件",
+      "type": "Process",
+      "level": 2,
+      "summary": "规则引擎的入口，接收各风控层上报的原始事件数据"
+    },
+    {
+      "id": "rule_matching",
+      "label": "规则匹配",
+      "type": "Process",
+      "level": 2,
+      "summary": "对输入事件执行规则匹配运算，判断是否命中风控规则"
+    },
+    {
+      "id": "risk_scoring",
+      "label": "风险评分",
+      "type": "Process",
+      "level": 2,
+      "summary": "根据规则匹配结果计算风险评分，量化事件风险等级"
+    },
+    {
+      "id": "decision_action",
+      "label": "决策动作",
+      "type": "Decision",
+      "level": 2,
+      "summary": "依据风险评分触发对应处置决策"
+    },
+    {
+      "id": "order_exception",
+      "label": "订单异常",
+      "type": "Risk",
+      "level": 2,
+      "summary": "交易订单层面的异常，触发撤销或回滚操作"
+    },
+    {
+      "id": "payment_timeout",
+      "label": "支付超时",
+      "type": "Risk",
+      "level": 2,
+      "summary": "支付流程超时，触发自动重试机制"
+    },
+    {
+      "id": "fund_exception",
+      "label": "资金异常",
+      "type": "Risk",
+      "level": 2,
+      "summary": "资金层面的异常（如金额不符、冻结异常），触发冻结或人工审核"
+    },
+    {
+      "id": "system_error",
+      "label": "系统错误",
+      "type": "Risk",
+      "level": 2,
+      "summary": "系统级故障，触发服务降级或熔断保护"
+    },
+    {
+      "id": "data_inconsistency",
+      "label": "数据不一致",
+      "type": "Risk",
+      "level": 2,
+      "summary": "跨系统数据不一致，触发对账修正流程"
+    },
+    {
+      "id": "login_anomaly",
+      "label": "登录异常",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测异常登录模式，如短时间内大量登录失败"
+    },
+    {
+      "id": "remote_login",
+      "label": "异地登录",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测非惯用地点的登录行为，触发身份二次验证"
+    },
+    {
+      "id": "device_fingerprint",
+      "label": "设备指纹",
+      "type": "Rule",
+      "level": 3,
+      "summary": "通过设备特征采集与比对，识别异常设备和模拟器"
+    },
+    {
+      "id": "frequent_operation",
+      "label": "频繁操作",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测短时间内高频操作行为，防范暴力攻击"
+    },
+    {
+      "id": "abnormal_frequency",
+      "label": "异常频次",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测偏离正常统计分布的操作频次"
+    },
+    {
+      "id": "bot_behavior",
+      "label": "机器行为",
+      "type": "Rule",
+      "level": 3,
+      "summary": "识别自动化脚本或机器人操作特征"
+    },
+    {
+      "id": "large_transaction",
+      "label": "大额交易",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测超过阈值的大额交易，触发风控审查"
+    },
+    {
+      "id": "abnormal_price",
+      "label": "异常价格",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测偏离市场合理范围的异常报价"
+    },
+    {
+      "id": "cross_trading",
+      "label": "对敲",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测自买自卖、合谋对敲等操纵市场行为"
+    },
+    {
+      "id": "volume_pumping",
+      "label": "刷量",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测虚假交易量、刷单等市场操纵行为"
+    },
+    {
+      "id": "money_laundering",
+      "label": "洗钱",
+      "type": "Risk",
+      "level": 3,
+      "summary": "检测结构化交易、多层转账等洗钱行为模式"
+    },
+    {
+      "id": "coin_mixing",
+      "label": "混币",
+      "type": "Risk",
+      "level": 3,
+      "summary": "检测混币服务或隐私协议相关的资金混合作业"
+    },
+    {
+      "id": "abnormal_flow",
+      "label": "异常流向",
+      "type": "Rule",
+      "level": 3,
+      "summary": "检测偏离正常路径的资金流向，如流向高风险地址"
+    },
+    {
+      "id": "kyc",
+      "label": "KYC",
+      "type": "Rule",
+      "level": 3,
+      "summary": "客户身份识别验证，确保实名制合规要求"
+    },
+    {
+      "id": "sanctions_list",
+      "label": "制裁名单",
+      "type": "Rule",
+      "level": 3,
+      "summary": "比对国际制裁名单（OFAC等），拦截受限主体交易"
+    },
+    {
+      "id": "approve",
+      "label": "通过",
+      "type": "Decision",
+      "level": 3,
+      "summary": "低风险判定，放行事件"
+    },
+    {
+      "id": "manual_review",
+      "label": "人工审核",
+      "type": "Decision",
+      "level": 3,
+      "summary": "中风险判定，转入人工审核流程"
+    },
+    {
+      "id": "reject",
+      "label": "拒绝",
+      "type": "Decision",
+      "level": 3,
+      "summary": "高风险判定，直接拒绝操作或交易"
+    },
+    {
+      "id": "freeze",
+      "label": "冻结",
+      "type": "Decision",
+      "level": 3,
+      "summary": "严重风险判定，冻结账户或资产"
+    },
+    {
+      "id": "cancel_rollback",
+      "label": "撤销回滚",
+      "type": "Process",
+      "level": 3,
+      "summary": "撤销异常订单并回滚相关状态"
+    },
+    {
+      "id": "auto_retry",
+      "label": "自动重试",
+      "type": "Process",
+      "level": 3,
+      "summary": "对超时支付进行自动重试"
+    },
+    {
+      "id": "degrade_circuit_break",
+      "label": "降级熔断",
+      "type": "Process",
+      "level": 3,
+      "summary": "系统故障时触发服务降级或熔断保护"
+    },
+    {
+      "id": "reconciliation_correction",
+      "label": "对账修正",
+      "type": "Process",
+      "level": 3,
+      "summary": "跨系统数据对账与一致性修正"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_root_layers",
+      "source": "risk_control_system",
+      "target": "risk_control_layers",
+      "relation": "HAS_MODULE",
+      "direction": "source_to_target",
+      "summary": "风控系统包含五层风控体系"
+    },
+    {
+      "id": "e_root_engine",
+      "source": "risk_control_system",
+      "target": "rule_engine",
+      "relation": "HAS_MODULE",
+      "direction": "source_to_target",
+      "summary": "风控系统包含规则引擎"
+    },
+    {
+      "id": "e_root_exception",
+      "source": "risk_control_system",
+      "target": "exception_handling",
+      "relation": "HAS_MODULE",
+      "direction": "source_to_target",
+      "summary": "风控系统包含异常处理策略"
+    },
+    {
+      "id": "e_layers_account",
+      "source": "risk_control_layers",
+      "target": "account_layer",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "风控分层包含账户层"
+    },
+    {
+      "id": "e_layers_behavior",
+      "source": "risk_control_layers",
+      "target": "behavior_layer",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "风控分层包含行为层"
+    },
+    {
+      "id": "e_layers_transaction",
+      "source": "risk_control_layers",
+      "target": "transaction_layer",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "风控分层包含交易层"
+    },
+    {
+      "id": "e_layers_fund",
+      "source": "risk_control_layers",
+      "target": "fund_layer",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "风控分层包含资金层"
+    },
+    {
+      "id": "e_layers_compliance",
+      "source": "risk_control_layers",
+      "target": "compliance_layer",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "风控分层包含合规层"
+    },
+    {
+      "id": "e_account_login",
+      "source": "account_layer",
+      "target": "login_anomaly",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "账户层包含登录异常检测规则"
+    },
+    {
+      "id": "e_account_remote",
+      "source": "account_layer",
+      "target": "remote_login",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "账户层包含异地登录检测规则"
+    },
+    {
+      "id": "e_account_device",
+      "source": "account_layer",
+      "target": "device_fingerprint",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "账户层包含设备指纹规则"
+    },
+    {
+      "id": "e_behavior_frequent",
+      "source": "behavior_layer",
+      "target": "frequent_operation",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "行为层包含频繁操作检测规则"
+    },
+    {
+      "id": "e_behavior_frequency",
+      "source": "behavior_layer",
+      "target": "abnormal_frequency",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "行为层包含异常频次检测规则"
+    },
+    {
+      "id": "e_behavior_bot",
+      "source": "behavior_layer",
+      "target": "bot_behavior",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "行为层包含机器行为识别规则"
+    },
+    {
+      "id": "e_transaction_large",
+      "source": "transaction_layer",
+      "target": "large_transaction",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "交易层包含大额交易检测规则"
+    },
+    {
+      "id": "e_transaction_price",
+      "source": "transaction_layer",
+      "target": "abnormal_price",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "交易层包含异常价格检测规则"
+    },
+    {
+      "id": "e_transaction_cross",
+      "source": "transaction_layer",
+      "target": "cross_trading",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "交易层包含对敲检测规则"
+    },
+    {
+      "id": "e_transaction_volume",
+      "source": "transaction_layer",
+      "target": "volume_pumping",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "交易层包含刷量检测规则"
+    },
+    {
+      "id": "e_fund_laundering",
+      "source": "fund_layer",
+      "target": "money_laundering",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "资金层包含洗钱检测规则"
+    },
+    {
+      "id": "e_fund_mixing",
+      "source": "fund_layer",
+      "target": "coin_mixing",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "资金层包含混币检测规则"
+    },
+    {
+      "id": "e_fund_flow",
+      "source": "fund_layer",
+      "target": "abnormal_flow",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "资金层包含异常流向检测规则"
+    },
+    {
+      "id": "e_compliance_kyc",
+      "source": "compliance_layer",
+      "target": "kyc",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "合规层包含KYC验证规则"
+    },
+    {
+      "id": "e_compliance_sanctions",
+      "source": "compliance_layer",
+      "target": "sanctions_list",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "合规层包含制裁名单筛查规则"
+    },
+    {
+      "id": "e_engine_input",
+      "source": "rule_engine",
+      "target": "input_event",
+      "relation": "HAS_STEP",
+      "direction": "source_to_target",
+      "summary": "规则引擎第一步：接收输入事件"
+    },
+    {
+      "id": "e_input_matching",
+      "source": "input_event",
+      "target": "rule_matching",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "输入事件触发规则匹配计算"
+    },
+    {
+      "id": "e_matching_scoring",
+      "source": "rule_matching",
+      "target": "risk_scoring",
+      "relation": "GENERATES",
+      "direction": "source_to_target",
+      "summary": "规则匹配结果生成风险评分"
+    },
+    {
+      "id": "e_scoring_decision",
+      "source": "risk_scoring",
+      "target": "decision_action",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "风险评分触发对应决策动作"
+    },
+    {
+      "id": "e_decision_approve",
+      "source": "decision_action",
+      "target": "approve",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "决策动作包含通过（放行）"
+    },
+    {
+      "id": "e_decision_review",
+      "source": "decision_action",
+      "target": "manual_review",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "决策动作包含人工审核"
+    },
+    {
+      "id": "e_decision_reject",
+      "source": "decision_action",
+      "target": "reject",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "决策动作包含拒绝"
+    },
+    {
+      "id": "e_decision_freeze",
+      "source": "decision_action",
+      "target": "freeze",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "决策动作包含冻结"
+    },
+    {
+      "id": "e_account_input",
+      "source": "account_layer",
+      "target": "input_event",
+      "relation": "DEPENDS_ON",
+      "direction": "source_to_target",
+      "summary": "账户层检测结果作为输入事件进入规则引擎"
+    },
+    {
+      "id": "e_behavior_input",
+      "source": "behavior_layer",
+      "target": "input_event",
+      "relation": "DEPENDS_ON",
+      "direction": "source_to_target",
+      "summary": "行为层检测结果作为输入事件进入规则引擎"
+    },
+    {
+      "id": "e_transaction_input",
+      "source": "transaction_layer",
+      "target": "input_event",
+      "relation": "DEPENDS_ON",
+      "direction": "source_to_target",
+      "summary": "交易层检测结果作为输入事件进入规则引擎"
+    },
+    {
+      "id": "e_fund_input",
+      "source": "fund_layer",
+      "target": "input_event",
+      "relation": "DEPENDS_ON",
+      "direction": "source_to_target",
+      "summary": "资金层检测结果作为输入事件进入规则引擎"
+    },
+    {
+      "id": "e_compliance_input",
+      "source": "compliance_layer",
+      "target": "input_event",
+      "relation": "DEPENDS_ON",
+      "direction": "source_to_target",
+      "summary": "合规层检测结果作为输入事件进入规则引擎"
+    },
+    {
+      "id": "e_order_exception",
+      "source": "exception_handling",
+      "target": "order_exception",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "异常处理策略包含订单异常场景"
+    },
+    {
+      "id": "e_payment_timeout",
+      "source": "exception_handling",
+      "target": "payment_timeout",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "异常处理策略包含支付超时场景"
+    },
+    {
+      "id": "e_fund_exception",
+      "source": "exception_handling",
+      "target": "fund_exception",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "异常处理策略包含资金异常场景"
+    },
+    {
+      "id": "e_system_error_edge",
+      "source": "exception_handling",
+      "target": "system_error",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "异常处理策略包含系统错误场景"
+    },
+    {
+      "id": "e_data_inconsistency",
+      "source": "exception_handling",
+      "target": "data_inconsistency",
+      "relation": "CONTAINS",
+      "direction": "source_to_target",
+      "summary": "异常处理策略包含数据不一致场景"
+    },
+    {
+      "id": "e_order_action",
+      "source": "order_exception",
+      "target": "cancel_rollback",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "订单异常触发撤销回滚操作"
+    },
+    {
+      "id": "e_payment_action",
+      "source": "payment_timeout",
+      "target": "auto_retry",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "支付超时触发自动重试"
+    },
+    {
+      "id": "e_fund_action_freeze",
+      "source": "fund_exception",
+      "target": "freeze",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "资金异常触发冻结操作"
+    },
+    {
+      "id": "e_fund_action_review",
+      "source": "fund_exception",
+      "target": "manual_review",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "资金异常触发人工审核"
+    },
+    {
+      "id": "e_system_action",
+      "source": "system_error",
+      "target": "degrade_circuit_break",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "系统错误触发降级熔断"
+    },
+    {
+      "id": "e_data_action",
+      "source": "data_inconsistency",
+      "target": "reconciliation_correction",
+      "relation": "TRIGGERS",
+      "direction": "source_to_target",
+      "summary": "数据不一致触发的对账修正"
+    },
+    {
+      "id": "e_layer_account_risk",
+      "source": "risk_control_layers",
+      "target": "login_anomaly",
+      "relation": "RISKS",
+      "direction": "source_to_target",
+      "summary": "登录异常是账户层的核心风险检测项"
+    },
+    {
+      "id": "e_layer_behavior_risk",
+      "source": "risk_control_layers",
+      "target": "bot_behavior",
+      "relation": "RISKS",
+      "direction": "source_to_target",
+      "summary": "机器行为是行为层的核心风险检测项"
+    },
+    {
+      "id": "e_layer_transaction_risk",
+      "source": "risk_control_layers",
+      "target": "cross_trading",
+      "relation": "RISKS",
+      "direction": "source_to_target",
+      "summary": "对敲是交易层的核心风险检测项"
+    },
+    {
+      "id": "e_layer_fund_risk",
+      "source": "risk_control_layers",
+      "target": "money_laundering",
+      "relation": "RISKS",
+      "direction": "source_to_target",
+      "summary": "洗钱是资金层的核心风险检测项"
+    },
+    {
+      "id": "e_layer_compliance_risk",
+      "source": "risk_control_layers",
+      "target": "sanctions_list",
+      "relation": "RISKS",
+      "direction": "source_to_target",
+      "summary": "制裁名单是合规层的核心风险检测项"
+    }
+  ],
+  "hierarchy": [
+    {
+      "level": 0,
+      "nodes": ["risk_control_system"]
+    },
+    {
+      "level": 1,
+      "nodes": ["risk_control_layers", "rule_engine", "exception_handling"]
+    },
+    {
+      "level": 2,
+      "nodes": [
+        "account_layer", "behavior_layer", "transaction_layer",
+        "fund_layer", "compliance_layer", "input_event",
+        "rule_matching", "risk_scoring", "decision_action",
+        "order_exception", "payment_timeout", "fund_exception",
+        "system_error", "data_inconsistency"
+      ]
+    },
+    {
+      "level": 3,
+      "nodes": [
+        "login_anomaly", "remote_login", "device_fingerprint",
+        "frequent_operation", "abnormal_frequency", "bot_behavior",
+        "large_transaction", "abnormal_price", "cross_trading", "volume_pumping",
+        "money_laundering", "coin_mixing", "abnormal_flow",
+        "kyc", "sanctions_list",
+        "approve", "manual_review", "reject", "freeze",
+        "cancel_rollback", "auto_retry", "degrade_circuit_break",
+        "reconciliation_correction"
+      ]
+    }
+  ],
+  "insights": [
+    {
+      "type": "architecture",
+      "content": "风控系统采用五层纵向分层架构（账户→行为→交易→资金→合规），各层聚焦独立风险维度，实现关注点分离和水平扩展能力"
+    },
+    {
+      "type": "pipeline",
+      "content": "规则引擎形成完整的处理流水线：输入事件→规则匹配→风险评分→决策动作，各阶段职责清晰，支持事件驱动的实时风控"
+    },
+    {
+      "type": "risk_pattern",
+      "content": "共覆盖5类23个具体风险检测项，其中账户层(3项)、行为层(3项)、交易层(4项)、资金层(3项)、合规层(2项)，交易层风险密度最高"
+    },
+    {
+      "type": "decision_logic",
+      "content": "决策动作分4个梯度：通过(放行)→人工审核(中风险)→拒绝(高风险)→冻结(严重风险)，形成递进式处置策略"
+    },
+    {
+      "type": "exception_handling",
+      "content": "5种异常场景各有专属处置策略：订单异常→撤销回滚、支付超时→自动重试、资金异常→冻结/人工审核、系统错误→降级熔断、数据不一致→对账修正，体现差异化恢复机制"
+    },
+    {
+      "type": "cross_reference",
+      "content": "资金异常场景同时映射到规则引擎的「冻结」和「人工审核」两个决策节点，说明异常处理与规则引擎决策面存在交叉复用关系"
+    }
+  ]
+}
