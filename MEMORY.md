@@ -38,9 +38,6 @@
 - **DeepSeek:** API key 模式，生产密钥
 - **Tavily:** Web 搜索已启用 (API key 已配)
 
-### 已知问题
-- ~~Bonjour mDNS 插件导致 WebSocket 断连循环 → 已禁用~~
-- ~~Anthropic key 曾有 HTTP 401（过期账单探测，非推理失败）→ 已验证工作正常~~
 
 ---
 
@@ -67,8 +64,8 @@
 ## 🔬 OCR 研究项目
 
 ### DeepSeek-OCR / OCR-2 on Mac MPS
-- **v1 路径:** `~/Desktop/bintu66/bintu66/DeepSeek-OCR/`
-- **v2 路径:** `~/Desktop/bintu66/bintu66/DeepSeek-OCR-2/`
+- **v1 路径:** `~....`
+- **v2 路径:** `...../`
 - **工作区 clone:** `workspace/DeepSeek-OCR/`
 - **Python 环境:** `deepseek-ocr` (Python 3.12.9)
 - **Tesseract OCR:** 已安装 + 163 语言包
@@ -81,17 +78,12 @@
 
 | Channel | Bot | Status |
 |---|---|---|
-| **Telegram** | `@vibai223_bot` | ✅ 已设置，groupPolicy: open |
-
-### 垃圾消息
-- 用户 `Orange123` (6515805673, @lebert1314) 曾发送重复垃圾消息
-- 处理方式: 告知一次后启动沉默 (NO_REPLY) — 不继续回应该用户
+| **Telegram** | `....` | ✅ 已设置，groupPolicy: open |
 
 ---
 
 ## 📝 沟通偏好
 
-- Linda 舒服时用中文，技术术语切换英文
 - 偏好: 直接、结构化输出；PRD/SOP-ready；表格对比
 - 始终分离: 产品/交互/数据/工程逻辑
 - 始终标识: 风险、缺失字段、边界情况、下一步行动
